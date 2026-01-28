@@ -32,6 +32,102 @@
         <button onclick="carregarComputadores()">Atualizar Lista</button>
         <div id="lista"></div>
     </div>
+    <!-- ========== NOVO: MENU DE NAVEGAÇÃO ========== -->
+<div style="margin: 20px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+    <button onclick="mostrarAtivos()" style="margin-right: 10px;">
+        🖥️ Computadores Ativos
+    </button>
+    <button onclick="mostrarHistorico()" style="margin-right: 10px;">
+        📜 Histórico Completo
+    </button>
+    <button onclick="mostrarTodos()">
+        🔄 Todos os Registros
+    </button>
+</div>
+
+<!-- ========== NOVA ÁREA DE CONTEÚDO ========== -->
+<div id="conteudo">
+    <!-- Aqui vai aparecer ativos, histórico ou todos -->
+</div>
+
+<script>
+// ========== FUNÇÕES NOVAS ==========
+
+function mostrarAtivos() {
+    fetch(`${API_URL}/api/ativos`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('conteudo').innerHTML = criarTabela(data.ativos, 'Computadores Ativos');
+        document.getElementById('lista').innerHTML = ''; // Limpa a lista antiga
+    })
+    .catch(error => alert('Erro: ' + error));
+}
+
+function mostrarHistorico() {
+    fetch(`${API_URL}/api/historico`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('conteudo').innerHTML = criarTabela(data.historico, 'Histórico Completo');
+        document.getElementById('lista').innerHTML = '';
+    })
+    .catch(error => alert('Erro: ' + error));
+}
+
+function mostrarTodos() {
+    // Usa a rota original
+    carregarComputadores();
+    document.getElementById('conteudo').innerHTML = '';
+}
+
+function criarTabela(dados, titulo) {
+    if (!dados || dados.length === 0) {
+        return `<h3>${titulo}</h3><p>Nenhum registro encontrado.</p>`;
+    }
+    
+    let html = `
+        <h3>${titulo} (${dados.length} registros)</h3>
+        <table border="1" style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="background:#ddd">
+                <th>Hostname</th>
+                <th>Sistema</th>
+                <th>Memória</th>
+                <th>Processador</th>
+                <th>Última Atualização</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    dados.forEach(item => {
+        html += `
+            <tr>
+                <td><strong>${item.hostname}</strong></td>
+                <td>${item.sistema_operacional}</td>
+                <td>${item.memoria_gb ? item.memoria_gb + ' GB' : 'N/A'}</td>
+                <td>${item.processador || 'N/A'}</td>
+                <td>${new Date(item.ultima_coleta).toLocaleString()}</td>
+            </tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    return html;
+}
+
+// Modifica a função existente para também usar a tabela
+function mostrarComputadores(computadores) {
+    const lista = document.getElementById('lista');
+    if (!computadores || computadores.length === 0) {
+        lista.innerHTML = '<p>Nenhum computador cadastrado.</p>';
+        return;
+    }
+    
+    lista.innerHTML = criarTabela(computadores, 'Todos os Computadores');
+}
+</script>
 
     <script>
         let token = '';

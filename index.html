@@ -4,221 +4,467 @@
     <title>Inventário BACEN</title>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
-        input, button { padding: 10px; margin: 5px; width: 100%; box-sizing: border-box; }
-        .login { background: #f0f0f0; padding: 20px; border-radius: 5px; }
-        .form { display: none; background: #e8f4ff; padding: 20px; border-radius: 5px; }
-        .error { color: red; }
-        .success { color: green; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .login-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .login-box h2 {
+            color: #4361ee;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            border-color: #4361ee;
+            outline: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-success {
+            background: #4cc9f0;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .form-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .form-box h2 {
+            color: #4361ee;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th {
+            background: #4361ee;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            background: #4cc9f0;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
-    <div class="login" id="loginSection">
-        <h2>🔒 Login Inventário BACEN</h2>
-        <input type="password" id="tokenInput" placeholder="Cole seu token de acesso">
-        <button onclick="login()">Acessar Sistema</button>
-        <p class="error" id="loginError"></p>
-    </div>
-
-    <div class="form" id="appSection">
-        <h2>➕ Adicionar Computador</h2>
-        <input id="hostname" placeholder="Hostname (ex: PC-001)">
-        <input id="sistema" placeholder="Sistema Operacional">
-        <input id="memoria" placeholder="Memória (GB)" type="number">
-        <input id="processador" placeholder="Processador">
-        <button onclick="adicionarComputador()">Cadastrar</button>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Inventário de Computadores - BACEN</h1>
+            <p>Sistema de gerenciamento e monitoramento de equipamentos</p>
+        </div>
         
-        <h2>📋 Computadores Cadastrados</h2>
-        <button onclick="carregarComputadores()">Atualizar Lista</button>
-        <div id="lista"></div>
+        <div class="content">
+            <!-- TELA DE LOGIN -->
+            <div id="loginSection" class="login-box">
+                <h2>🔐 Autenticação</h2>
+                <p>Para acessar o sistema, insira o token de segurança:</p>
+                <input type="password" id="tokenInput" placeholder="Cole seu token de acesso aqui...">
+                <button class="btn" onclick="login()">
+                    <span>🔑 Acessar Sistema</span>
+                </button>
+                <div id="loginError" class="alert alert-error hidden"></div>
+            </div>
+            
+            <!-- APÓS LOGIN (INICIALMENTE OCULTO) -->
+            <div id="appSection" class="hidden">
+                <!-- MENU DE NAVEGAÇÃO -->
+                <div class="nav-menu">
+                    <button class="btn" onclick="mostrarCadastro()">
+                        <span>➕</span> Novo Computador
+                    </button>
+                    <button class="btn btn-success" onclick="mostrarAtivos()">
+                        <span>🖥️</span> Computadores Ativos
+                    </button>
+                    <button class="btn" onclick="mostrarHistorico()">
+                        <span>📜</span> Histórico Completo
+                    </button>
+                    <button class="btn btn-secondary" onclick="mostrarTodos()">
+                        <span>🔄</span> Todos os Registros
+                    </button>
+                </div>
+                
+                <!-- FORMULÁRIO DE CADASTRO -->
+                <div id="cadastroSection" class="form-box">
+                    <h2>➕ Adicionar Novo Computador</h2>
+                    <div class="form-grid">
+                        <input id="hostname" placeholder="Nome do Computador (ex: PC-001)" required>
+                        <input id="sistema" placeholder="Sistema Operacional (ex: Windows 11)" required>
+                        <input id="memoria" placeholder="Memória RAM (GB)" type="number">
+                        <input id="processador" placeholder="Processador (ex: Intel i7)">
+                    </div>
+                    <button class="btn" onclick="adicionarComputador()">
+                        <span>💾</span> Cadastrar Computador
+                    </button>
+                    <div id="cadastroResult" class="alert hidden"></div>
+                </div>
+                
+                <!-- ÁREA DE RESULTADOS -->
+                <div id="resultSection" class="form-box">
+                    <h2 id="resultTitle">📋 Resultados</h2>
+                    <div id="resultContent">
+                        <!-- Aqui aparecem as tabelas -->
+                    </div>
+                </div>
+                
+                <!-- INFORMAÇÕES DO SISTEMA -->
+                <div class="form-box" style="background: #e8f4ff;">
+                    <h2>ℹ️ Informações do Sistema</h2>
+                    <p><strong>API:</strong> <span id="apiStatus">Conectado</span></p>
+                    <p><strong>Total de registros:</strong> <span id="totalRegistros">0</span></p>
+                    <p><strong>Última atualização:</strong> <span id="ultimaAtualizacao">-</span></p>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- ========== NOVO: MENU DE NAVEGAÇÃO ========== -->
-<div style="margin: 20px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
-    <button onclick="mostrarAtivos()" style="margin-right: 10px;">
-        🖥️ Computadores Ativos
-    </button>
-    <button onclick="mostrarHistorico()" style="margin-right: 10px;">
-        📜 Histórico Completo
-    </button>
-    <button onclick="mostrarTodos()">
-        🔄 Todos os Registros
-    </button>
-</div>
-
-<!-- ========== NOVA ÁREA DE CONTEÚDO ========== -->
-<div id="conteudo">
-    <!-- Aqui vai aparecer ativos, histórico ou todos -->
-</div>
-
-<script>
-// ========== FUNÇÕES NOVAS ==========
-
-function mostrarAtivos() {
-    fetch(`${API_URL}/api/ativos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('conteudo').innerHTML = criarTabela(data.ativos, 'Computadores Ativos');
-        document.getElementById('lista').innerHTML = ''; // Limpa a lista antiga
-    })
-    .catch(error => alert('Erro: ' + error));
-}
-
-function mostrarHistorico() {
-    fetch(`${API_URL}/api/historico`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('conteudo').innerHTML = criarTabela(data.historico, 'Histórico Completo');
-        document.getElementById('lista').innerHTML = '';
-    })
-    .catch(error => alert('Erro: ' + error));
-}
-
-function mostrarTodos() {
-    // Usa a rota original
-    carregarComputadores();
-    document.getElementById('conteudo').innerHTML = '';
-}
-
-function criarTabela(dados, titulo) {
-    if (!dados || dados.length === 0) {
-        return `<h3>${titulo}</h3><p>Nenhum registro encontrado.</p>`;
-    }
-    
-    let html = `
-        <h3>${titulo} (${dados.length} registros)</h3>
-        <table border="1" style="width:100%; border-collapse:collapse;">
-        <thead>
-            <tr style="background:#ddd">
-                <th>Hostname</th>
-                <th>Sistema</th>
-                <th>Memória</th>
-                <th>Processador</th>
-                <th>Última Atualização</th>
-            </tr>
-        </thead>
-        <tbody>`;
-    
-    dados.forEach(item => {
-        html += `
-            <tr>
-                <td><strong>${item.hostname}</strong></td>
-                <td>${item.sistema_operacional}</td>
-                <td>${item.memoria_gb ? item.memoria_gb + ' GB' : 'N/A'}</td>
-                <td>${item.processador || 'N/A'}</td>
-                <td>${new Date(item.ultima_coleta).toLocaleString()}</td>
-            </tr>`;
-    });
-    
-    html += `</tbody></table>`;
-    return html;
-}
-
-// Modifica a função existente para também usar a tabela
-function mostrarComputadores(computadores) {
-    const lista = document.getElementById('lista');
-    if (!computadores || computadores.length === 0) {
-        lista.innerHTML = '<p>Nenhum computador cadastrado.</p>';
-        return;
-    }
-    
-    lista.innerHTML = criarTabela(computadores, 'Todos os Computadores');
-}
-</script>
 
     <script>
+        // CONFIGURAÇÕES
         let token = '';
         const API_URL = 'https://inventario-api-production-a70e.up.railway.app';
-
+        let dadosAtuais = [];
+        
+        // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
         function login() {
             token = document.getElementById('tokenInput').value.trim();
             if (!token) {
-                document.getElementById('loginError').textContent = 'Digite o token!';
+                mostrarErro('loginError', 'Por favor, insira o token de acesso.');
                 return;
             }
             
-            // Testa se token funciona
+            // Testa a conexão
             fetch(`${API_URL}/api/computadores`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             .then(response => {
                 if (response.ok) {
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('appSection').style.display = 'block';
-                    carregarComputadores();
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('appSection').classList.remove('hidden');
+                    mostrarTodos();
+                    atualizarStatus();
                 } else {
-                    document.getElementById('loginError').textContent = 'Token inválido!';
+                    mostrarErro('loginError', 'Token inválido ou expirado.');
                 }
             })
             .catch(() => {
-                document.getElementById('loginError').textContent = 'Erro de conexão!';
+                mostrarErro('loginError', 'Erro de conexão com o servidor.');
             });
         }
-
-        async function carregarComputadores() {
-            try {
-                const response = await fetch(`${API_URL}/api/computadores`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                mostrarComputadores(data.computadores);
-            } catch (error) {
-                alert('Erro ao carregar: ' + error);
-            }
+        
+        // ========== FUNÇÕES DE NAVEGAÇÃO ==========
+        function mostrarCadastro() {
+            document.getElementById('cadastroSection').classList.remove('hidden');
+            document.getElementById('resultSection').classList.add('hidden');
+            limparFormulario();
         }
-
-        async function adicionarComputador() {
+        
+        function mostrarAtivos() {
+            document.getElementById('cadastroSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            fetch(`${API_URL}/api/ativos`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultTitle').innerHTML = '🖥️ Computadores Ativos';
+                document.getElementById('resultContent').innerHTML = criarTabela(data.ativos, 'ativos');
+                dadosAtuais = data.ativos || [];
+                atualizarStatus();
+            })
+            .catch(error => mostrarMensagem('Erro ao carregar: ' + error, 'error'));
+        }
+        
+        function mostrarHistorico() {
+            document.getElementById('cadastroSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            fetch(`${API_URL}/api/historico`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultTitle').innerHTML = '📜 Histórico Completo';
+                document.getElementById('resultContent').innerHTML = criarTabela(data.historico, 'historico');
+                dadosAtuais = data.historico || [];
+                atualizarStatus();
+            })
+            .catch(error => mostrarMensagem('Erro ao carregar: ' + error, 'error'));
+        }
+        
+        function mostrarTodos() {
+            document.getElementById('cadastroSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            fetch(`${API_URL}/api/computadores`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultTitle').innerHTML = '🔄 Todos os Registros';
+                document.getElementById('resultContent').innerHTML = criarTabela(data.computadores, 'todos');
+                dadosAtuais = data.computadores || [];
+                atualizarStatus();
+            })
+            .catch(error => mostrarMensagem('Erro ao carregar: ' + error, 'error'));
+        }
+        
+        // ========== FUNÇÕES DE CADASTRO ==========
+        function adicionarComputador() {
             const computador = {
                 hostname: document.getElementById('hostname').value,
                 sistema_operacional: document.getElementById('sistema').value,
                 memoria_gb: document.getElementById('memoria').value ? parseFloat(document.getElementById('memoria').value) : null,
                 processador: document.getElementById('processador').value || null
             };
-
-            try {
-                const response = await fetch(`${API_URL}/api/inventario`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(computador)
-                });
-                const data = await response.json();
-                alert(data.mensagem);
-                if (data.status === 'sucesso') {
-                    carregarComputadores();
-                    // Limpa formulário
-                    document.getElementById('hostname').value = '';
-                    document.getElementById('sistema').value = '';
-                    document.getElementById('memoria').value = '';
-                    document.getElementById('processador').value = '';
-                }
-            } catch (error) {
-                alert('Erro ao cadastrar: ' + error);
-            }
-        }
-
-        function mostrarComputadores(computadores) {
-            const lista = document.getElementById('lista');
-            if (!computadores || computadores.length === 0) {
-                lista.innerHTML = '<p>Nenhum computador cadastrado.</p>';
+            
+            if (!computador.hostname || !computador.sistema_operacional) {
+                mostrarMensagem('Preencha pelo menos o nome e sistema operacional.', 'error');
                 return;
             }
             
-            lista.innerHTML = computadores.map(comp => `
-                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                    <strong>${comp.hostname}</strong><br>
-                    SO: ${comp.sistema_operacional}<br>
-                    ${comp.memoria_gb ? 'Memória: ' + comp.memoria_gb + ' GB<br>' : ''}
-                    ${comp.processador ? 'Processador: ' + comp.processador + '<br>' : ''}
-                    Última atualização: ${new Date(comp.ultima_coleta).toLocaleString()}
-                </div>
-            `).join('');
+            fetch(`${API_URL}/api/inventario`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(computador)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    mostrarMensagem('✅ Computador cadastrado com sucesso!', 'success');
+                    limparFormulario();
+                    mostrarTodos(); // Atualiza a lista
+                } else {
+                    mostrarMensagem('❌ Erro: ' + data.mensagem, 'error');
+                }
+            })
+            .catch(error => mostrarMensagem('Erro de conexão: ' + error, 'error'));
         }
+        
+        // ========== FUNÇÕES AUXILIARES ==========
+        function criarTabela(dados, tipo) {
+            if (!dados || dados.length === 0) {
+                return '<p class="alert">Nenhum registro encontrado.</p>';
+            }
+            
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Computador</th>
+                                <th>Sistema</th>
+                                <th>Memória</th>
+                                <th>Processador</th>
+                                <th>Última Atualização</th>
+                                ${tipo === 'historico' ? '<th>Tipo</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>`;
+            
+            dados.forEach((item, index) => {
+                const isUltimo = tipo === 'historico' && index === 0;
+                html += `
+                    <tr>
+                        <td><strong>${item.hostname}</strong></td>
+                        <td>${item.sistema_operacional}</td>
+                        <td>${item.memoria_gb ? item.memoria_gb + ' GB' : '<em>N/A</em>'}</td>
+                        <td>${item.processador || '<em>N/A</em>'}</td>
+                        <td>${new Date(item.ultima_coleta).toLocaleString()}</td>
+                        ${tipo === 'historico' ? `<td>${isUltimo ? '<span class="badge">ATUAL</span>' : 'histórico'}</td>` : ''}
+                    </tr>`;
+            });
+            
+            html += `</tbody></table></div>`;
+            return html;
+        }
+        
+        function atualizarStatus() {
+            document.getElementById('totalRegistros').textContent = dadosAtuais.length;
+            document.getElementById('ultimaAtualizacao').textContent = new Date().toLocaleString();
+        }
+        
+        function limparFormulario() {
+            document.getElementById('hostname').value = '';
+            document.getElementById('sistema').value = '';
+            document.getElementById('memoria').value = '';
+            document.getElementById('processador').value = '';
+        }
+        
+        function mostrarMensagem(texto, tipo) {
+            const div = document.getElementById('cadastroResult');
+            div.textContent = texto;
+            div.className = `alert alert-${tipo}`;
+            div.classList.remove('hidden');
+            
+            if (tipo === 'success') {
+                setTimeout(() => div.classList.add('hidden'), 3000);
+            }
+        }
+        
+        function mostrarErro(elementId, mensagem) {
+            const div = document.getElementById(elementId);
+            div.textContent = mensagem;
+            div.classList.remove('hidden');
+        }
+        
+        // Inicialização
+        document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
     </script>
 </body>
 </html>

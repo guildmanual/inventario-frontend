@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventário BACEN</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+        input, button { padding: 10px; margin: 5px; width: 100%; box-sizing: border-box; }
+        .login { background: #f0f0f0; padding: 20px; border-radius: 5px; }
+        .form { display: none; background: #e8f4ff; padding: 20px; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="login" id="loginSection">
+        <h2>🔒 Login Inventário BACEN</h2>
+        <input type="password" id="tokenInput" placeholder="Cole seu token de acesso">
+        <button onclick="login()">Acessar Sistema</button>
+        <p class="error" id="loginError"></p>
+    </div>
+
+    <div class="form" id="appSection">
+        <h2>➕ Adicionar Computador</h2>
+        <input id="hostname" placeholder="Hostname (ex: PC-001)">
+        <input id="sistema" placeholder="Sistema Operacional">
+        <input id="memoria" placeholder="Memória (GB)" type="number">
+        <input id="processador" placeholder="Processador">
+        <button onclick="adicionarComputador()">Cadastrar</button>
+        
+        <h2>📋 Computadores Cadastrados</h2>
+        <button onclick="carregarComputadores()">Atualizar Lista</button>
+        <div id="lista"></div>
+    </div>
+
+    <script>
+        let token = '';
+        const API_URL = 'https://inventario-api-production-a70e.up.railway.app';
+
+        function login() {
+            token = document.getElementById('tokenInput').value.trim();
+            if (!token) {
+                document.getElementById('loginError').textContent = 'Digite o token!';
+                return;
+            }
+            
+            // Testa se token funciona
+            fetch(`${API_URL}/api/computadores`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('appSection').style.display = 'block';
+                    carregarComputadores();
+                } else {
+                    document.getElementById('loginError').textContent = 'Token inválido!';
+                }
+            })
+            .catch(() => {
+                document.getElementById('loginError').textContent = 'Erro de conexão!';
+            });
+        }
+
+        async function carregarComputadores() {
+            try {
+                const response = await fetch(`${API_URL}/api/computadores`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                mostrarComputadores(data.computadores);
+            } catch (error) {
+                alert('Erro ao carregar: ' + error);
+            }
+        }
+
+        async function adicionarComputador() {
+            const computador = {
+                hostname: document.getElementById('hostname').value,
+                sistema_operacional: document.getElementById('sistema').value,
+                memoria_gb: document.getElementById('memoria').value ? parseFloat(document.getElementById('memoria').value) : null,
+                processador: document.getElementById('processador').value || null
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/inventario`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(computador)
+                });
+                const data = await response.json();
+                alert(data.mensagem);
+                if (data.status === 'sucesso') {
+                    carregarComputadores();
+                    // Limpa formulário
+                    document.getElementById('hostname').value = '';
+                    document.getElementById('sistema').value = '';
+                    document.getElementById('memoria').value = '';
+                    document.getElementById('processador').value = '';
+                }
+            } catch (error) {
+                alert('Erro ao cadastrar: ' + error);
+            }
+        }
+
+        function mostrarComputadores(computadores) {
+            const lista = document.getElementById('lista');
+            if (!computadores || computadores.length === 0) {
+                lista.innerHTML = '<p>Nenhum computador cadastrado.</p>';
+                return;
+            }
+            
+            lista.innerHTML = computadores.map(comp => `
+                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+                    <strong>${comp.hostname}</strong><br>
+                    SO: ${comp.sistema_operacional}<br>
+                    ${comp.memoria_gb ? 'Memória: ' + comp.memoria_gb + ' GB<br>' : ''}
+                    ${comp.processador ? 'Processador: ' + comp.processador + '<br>' : ''}
+                    Última atualização: ${new Date(comp.ultima_coleta).toLocaleString()}
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
